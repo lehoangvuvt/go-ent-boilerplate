@@ -23,7 +23,8 @@ func (u *User) Validate() error {
 	if errs != nil {
 		return errs
 	}
-	if u.HashedPassword == "" {
+	errs = validate.Var(u.HashedPassword, "required")
+	if errs != nil {
 		return errors.New("hashed password is required")
 	}
 	return nil
