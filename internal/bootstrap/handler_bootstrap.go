@@ -8,6 +8,7 @@ import (
 	cacheports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/cache"
 	repositoryports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/repository"
 	securityports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/security"
+	httpmiddleware "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/middleware"
 	httprouter "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/router"
 )
 
@@ -17,7 +18,8 @@ type HandlerBootstrapArgs struct {
 }
 
 type Repositories struct {
-	UserRepository repositoryports.UserRepository
+	UserRepository        repositoryports.UserRepository
+	TransactionRepository repositoryports.TransactionRepository
 }
 
 type Services struct {
@@ -37,9 +39,17 @@ func BootstrapHandler(args HandlerBootstrapArgs) *chi.Mux {
 		TokenDuration:  args.Services.JWTDuration,
 	})
 
+	transactionHandler := bootstrapstack.BuildTransactionStack(bootstrapstack.BuildTransactionStackArgs{
+		TransactionRepository: args.Repositories.TransactionRepository,
+	})
+
+	authMW := httpmiddleware.NewAuthMiddleware(args.Services.JWTService)
+
 	router := httprouter.NewRouter(httprouter.NewRouterArgs{
-		UserHandler: userHandler,
-		AuthHandler: authHandler,
+		UserHandler:        userHandler,
+		AuthHandler:        authHandler,
+		TransactionHandler: transactionHandler,
+		AuthMiddleware:     authMW,
 	})
 
 	return router

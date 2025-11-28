@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/post"
+	"github.com/lehoangvuvt/go-ent-boilerplate/ent/transaction"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/user"
 )
 
@@ -74,8 +75,9 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			post.Table: post.ValidColumn,
-			user.Table: user.ValidColumn,
+			post.Table:        post.ValidColumn,
+			transaction.Table: transaction.ValidColumn,
+			user.Table:        user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

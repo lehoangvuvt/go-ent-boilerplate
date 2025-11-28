@@ -11,6 +11,7 @@ import (
 	rediscache "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/cache/redis"
 	entdb "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/ent"
 	jwtinfra "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/jwt"
+	transactionrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/transaction"
 	userrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/user"
 	"github.com/redis/go-redis/v9"
 )
@@ -27,6 +28,7 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 	}
 
 	userRepo := userrepository.NewUserRepository(entDB.Client())
+	transactionRepo := transactionrepository.NewTransactionRepository(entDB.Client())
 
 	jwtDuration := time.Duration(cfg.JWTConfig.Duration) * time.Second
 	jwtService := jwtinfra.NewService(cfg.JWTConfig.Secret, jwtDuration)
@@ -43,7 +45,8 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 
 	router := bootstrap.BootstrapHandler(bootstrap.HandlerBootstrapArgs{
 		Repositories: bootstrap.Repositories{
-			UserRepository: userRepo,
+			UserRepository:        userRepo,
+			TransactionRepository: transactionRepo,
 		},
 		Services: bootstrap.Services{
 			JWTService:   jwtService,

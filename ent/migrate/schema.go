@@ -30,6 +30,35 @@ var (
 			},
 		},
 	}
+	// TransactionsColumns holds the columns for the "transactions" table.
+	TransactionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "amount", Type: field.TypeInt64},
+		{Name: "currency", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "completed", "failed", "rejected"}, Default: "pending"},
+		{Name: "method", Type: field.TypeEnum, Enums: []string{"visa", "banking", "ewallet", "qr"}},
+		{Name: "visa_details", Type: field.TypeJSON, Nullable: true},
+		{Name: "banking_details", Type: field.TypeJSON, Nullable: true},
+		{Name: "ewallet_details", Type: field.TypeJSON, Nullable: true},
+		{Name: "qr_details", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// TransactionsTable holds the schema information for the "transactions" table.
+	TransactionsTable = &schema.Table{
+		Name:       "transactions",
+		Columns:    TransactionsColumns,
+		PrimaryKey: []*schema.Column{TransactionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "transactions_users_transactions",
+				Columns:    []*schema.Column{TransactionsColumns[11]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -47,10 +76,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		PostsTable,
+		TransactionsTable,
 		UsersTable,
 	}
 )
 
 func init() {
 	PostsTable.ForeignKeys[0].RefTable = UsersTable
+	TransactionsTable.ForeignKeys[0].RefTable = UsersTable
 }

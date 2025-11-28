@@ -6,12 +6,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpauth "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/auth"
+	httpmiddleware "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/middleware"
+	httptransaction "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/transaction"
 	httpuser "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/user"
 )
 
 type NewRouterArgs struct {
-	UserHandler *httpuser.UserHandler
-	AuthHandler *httpauth.AuthHandler
+	UserHandler        *httpuser.UserHandler
+	AuthHandler        *httpauth.AuthHandler
+	TransactionHandler *httptransaction.TransactionHandler
+	AuthMiddleware     *httpmiddleware.AuthMiddleware
 }
 
 func NewRouter(args NewRouterArgs) *chi.Mux {
@@ -28,6 +32,9 @@ func NewRouter(args NewRouterArgs) *chi.Mux {
 	r.Route("/api/v1", func(ur chi.Router) {
 		httpuser.RegisterRoutes(ur, args.UserHandler)
 		httpauth.RegisterRoutes(ur, args.AuthHandler)
+
+		protected := ur.With(args.AuthMiddleware.RequireJWT)
+		httptransaction.RegisterRoutes(protected, args.TransactionHandler)
 	})
 
 	return r
