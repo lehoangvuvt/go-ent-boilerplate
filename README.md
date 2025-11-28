@@ -16,6 +16,7 @@ Minimal Go service using chi for HTTP, ent for data access, and a hexagonal/Clea
 Dependency flow: handlers → use cases → ports → domain; infra implements ports and is injected from `internal/app`.
 
 ```mermaid
+%%{init: {'flowchart': {'nodeSpacing': 60, 'rankSpacing': 90}, 'themeVariables': {'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Entrypoint
         CMD["cmd/main.go"]
