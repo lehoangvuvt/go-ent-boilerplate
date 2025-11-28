@@ -15,7 +15,7 @@ type User struct {
 	Email          string     `json:"email"`
 	HashedPassword string     `json:"-"`
 	CreatedAt      time.Time  `json:"created_at"`
-	UpdateAt       *time.Time `json:"updated_at"`
+	UpdatedAt      *time.Time `json:"updated_at"`
 }
 
 func (u *User) Validate() error {

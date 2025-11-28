@@ -5,7 +5,7 @@ import (
 
 	userdomain "github.com/lehoangvuvt/go-ent-boilerplate/internal/domain/user"
 	repositoryports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/repository"
-	userusercasedto "github.com/lehoangvuvt/go-ent-boilerplate/internal/usecase/user/dto"
+	userusecasedto "github.com/lehoangvuvt/go-ent-boilerplate/internal/usecase/user/dto"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,7 +17,7 @@ func NewUserUsecase(userRepo repositoryports.UserRepository) *CreateUserUsecase 
 	return &CreateUserUsecase{userRepo: userRepo}
 }
 
-func (uc *CreateUserUsecase) Execute(ctx context.Context, req *userusercasedto.CreateUserRequest) (*userdomain.User, error) {
+func (uc *CreateUserUsecase) Execute(ctx context.Context, req *userusecasedto.CreateUserRequest) (*userdomain.User, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}

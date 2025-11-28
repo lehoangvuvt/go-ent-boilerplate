@@ -1,15 +1,15 @@
-package userusecasedto
+package authusecasedto
 
 import "github.com/go-playground/validator/v10"
 
-var validate = validator.New(validator.WithRequiredStructEnabled())
-
-type CreateUserRequest struct {
+type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func (req *CreateUserRequest) Validate() error {
+var validate = validator.New(validator.WithRequiredStructEnabled())
+
+func (req *LoginRequest) Validate() error {
 	errs := validate.Var(req.Email, "required,email")
 	if errs != nil {
 		return errs

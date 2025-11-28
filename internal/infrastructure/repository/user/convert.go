@@ -11,7 +11,7 @@ func toDomain(u *ent.User) *userdomain.User {
 		Email:          u.Email,
 		HashedPassword: u.HashedPassword,
 		CreatedAt:      u.CreatedAt,
-		UpdateAt:       u.UpdatedAt,
+		UpdatedAt:      u.UpdatedAt,
 	}
 }
 

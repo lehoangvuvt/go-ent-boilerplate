@@ -5,11 +5,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpauth "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/auth"
 	httpuser "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/user"
 )
 
 type NewRouterArgs struct {
 	UserHandler *httpuser.UserHandler
+	AuthHandler *httpauth.AuthHandler
 }
 
 func NewRouter(args NewRouterArgs) *chi.Mux {
@@ -25,6 +27,7 @@ func NewRouter(args NewRouterArgs) *chi.Mux {
 
 	r.Route("/api/v1", func(ur chi.Router) {
 		httpuser.RegisterRoutes(ur, args.UserHandler)
+		httpauth.RegisterRoutes(ur, args.AuthHandler)
 	})
 
 	return r

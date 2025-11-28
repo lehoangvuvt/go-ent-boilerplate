@@ -1,15 +1,43 @@
 package app
 
 import (
-	"log"
+	"context"
+	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/lehoangvuvt/go-ent-boilerplate/internal/config"
+	"github.com/lehoangvuvt/go-ent-boilerplate/pkg/logger"
 )
 
-func StartServer(r *chi.Mux) {
-	log.Println("listening on :8080")
-	if err := http.ListenAndServe(":8080", r); err != nil {
-		log.Fatal(err)
+func StartServer(ctx context.Context, cfg *config.Config, r *chi.Mux) error {
+	slog := logger.GetSugaredLogger()
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.AppConfig.Port),
+		Handler: r,
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		slog.Infof("listening on :%d", cfg.AppConfig.Port)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- err
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		slog.Info("shutting down server...")
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("server shutdown: %w", err)
+		}
+		return nil
+	case err := <-errCh:
+		return err
 	}
 }

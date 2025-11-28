@@ -2,41 +2,43 @@ package app
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap"
+	"github.com/lehoangvuvt/go-ent-boilerplate/internal/config"
 	entdb "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/ent"
 	userrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/user"
-	httprouter "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/router"
-	httpuser "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/user"
-	userusecase "github.com/lehoangvuvt/go-ent-boilerplate/internal/usecase/user"
 )
 
 type Container struct {
 	Router *chi.Mux
+	DB     *entdb.Client
 }
 
-func Build(ctx context.Context) *Container {
-	entDB, err := entdb.New(ctx, entdb.Config{
-		Driver:      "postgres",
-		DSN:         "",
-		AutoMigrate: true,
-	})
+func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
+	entDB, err := bootstrap.BootstrapEntDB(ctx, cfg)
 	if err != nil {
-		log.Fatalf("failed initialzing ent db. Error: %w", err)
+		return nil, fmt.Errorf("bootstrapping ent DB: %w", err)
 	}
 
-	userInfra := userrepository.NewUserRepository(entDB.Client())
-	createUserUC := userusecase.NewUserUsecase(userInfra)
-	userHandler := httpuser.NewUserHandler(httpuser.NewUserHandlerArgs{
-		CreateUserUC: createUserUC,
-	})
+	userRepo := userrepository.NewUserRepository(entDB.Client())
 
-	router := httprouter.NewRouter(httprouter.NewRouterArgs{
-		UserHandler: userHandler,
+	router := bootstrap.BootstrapHandler(bootstrap.HandlerBootstrapArgs{
+		Repositories: bootstrap.Repositories{
+			UserRepository: userRepo,
+		},
 	})
 
 	return &Container{
 		Router: router,
+		DB:     entDB,
+	}, nil
+}
+
+func (c *Container) Close() error {
+	if c == nil || c.DB == nil {
+		return nil
 	}
+	return c.DB.Close()
 }

@@ -14,7 +14,7 @@ type Config struct {
 }
 
 type Client struct {
-	Ent *ent.Client
+	ent *ent.Client
 }
 
 func New(ctx context.Context, cfg Config) (*Client, error) {
@@ -30,13 +30,13 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 		}
 	}
 
-	return &Client{Ent: client}, err
+	return &Client{ent: client}, err
 }
 
 func (c *Client) Close() error {
-	return c.Close()
+	return c.Client().Close()
 }
 
 func (c *Client) Client() *ent.Client {
-	return c.Ent
+	return c.ent
 }
