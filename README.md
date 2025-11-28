@@ -18,29 +18,29 @@ Dependency flow: handlers → use cases → ports → domain; infra implements p
 ```mermaid
 flowchart LR
     subgraph Entrypoint
-        CMD[cmd/main.go]
+        CMD["cmd/main.go"]
     end
     subgraph Composition
-        APP[internal/app\n(container & server)]
-        BOOT[internal/bootstrap\n(stacks & router wiring)]
+        APP["internal/app<br/>(container & server)"]
+        BOOT["internal/bootstrap<br/>(stacks & router wiring)"]
     end
     subgraph Interface
-        HTTP[internal/interface/http\n(router & handlers)]
-        PORTS[internal/interface/core/ports\n(repo, security/JWT)]
+        HTTP["internal/interface/http<br/>(router & handlers)"]
+        PORTS["internal/interface/core/ports<br/>(repo, security/JWT)"]
     end
     subgraph Usecase
-        UC[internal/usecase\n(auth, user)]
+        UC["internal/usecase<br/>(auth, user)"]
     end
     subgraph Domain
-        DOM[internal/domain\n(user entities)]
+        DOM["internal/domain<br/>(user entities)"]
     end
     subgraph Infrastructure
-        ENT[internal/infrastructure/ent\n(db client)]
-        REPO[internal/infrastructure/repository\n(user repo)]
-        JWT[internal/infrastructure/jwt\n(jwt service)]
+        ENT["internal/infrastructure/ent<br/>(db client)"]
+        REPO["internal/infrastructure/repository<br/>(user repo)"]
+        JWT["internal/infrastructure/jwt<br/>(jwt service)"]
     end
     subgraph Shared
-        PKG[pkg/\nhttpx, jwtx, logger]
+        PKG["pkg/<br/>(httpx, jwtx, logger)"]
     end
 
     CMD --> APP --> BOOT --> HTTP --> UC --> DOM
