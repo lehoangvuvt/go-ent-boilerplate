@@ -1,37 +1,80 @@
-# Go Ent Boilerplate
+# Go Ent Clean/Hex Boilerplate
 
-Minimal Go service skeleton using chi for HTTP routing, ent for data access, and a clean architecture split across domain/usecase/interface/infra layers.
+Minimal Go service using chi for HTTP, ent for data access, and a hexagonal/Clean split (domain ↔ use case ↔ ports, with infra adapters at the edge).
 
-## Layout
-- `cmd/`: application entrypoints (`main.go` bootstraps the HTTP server).
-- `internal/app/`: wiring (container) and server startup.
-- `internal/domain/`: core entities and validation (`user`).
-- `internal/usecase/`: business logic and DTOs (`user` create).
-- `internal/interface/`: adapters (HTTP router/handlers) and ports (`core/ports`).
-- `internal/infrastructure/`: ent client setup and repository implementations.
-- `pkg/httpx/`: small HTTP helpers for JSON encoding/decoding.
-- `ent/`: generated ent code and schemas.
+## Overview
+- `cmd/`: entrypoints (`main.go` wires config, builds container, starts HTTP).
+- `internal/app/`: composition root (builds infra, DI wiring, server lifecycle).
+- `internal/domain/`: enterprise models + validation (`user`).
+- `internal/usecase/`: application services (`auth` login, `user` create), DTOs and claim types.
+- `internal/interface/core/ports/`: inbound/outbound interfaces (repository, security/JWT).
+- `internal/interface/http/`: web adapters (router, handlers for auth/users).
+- `internal/infrastructure/`: outbound adapters (ent client, user repository, JWT service wrapper).
+- `pkg/`: shared helpers (e.g., `jwtx`, `httpx`, logging).
+- `ent/`: ent schemas and generated code.
 
-## Quick start
-1) Set environment/config for the database:
-   - Driver example: `POSTGRES_DRIVER=postgres`
-   - DSN example: `POSTGRES_DSN=postgres://user:pass@localhost:5432/dbname?sslmode=disable`
-   - Note: the current `internal/app/container.go` uses hard-coded config; adjust it or export vars before running.
-2) Run the service:
-   ```bash
-   go run ./cmd
-   ```
-   The server listens on `:8080`.
+Dependency flow: handlers → use cases → ports → domain; infra implements ports and is injected from `internal/app`.
 
-## HTTP surface
-- `GET /health` → basic health check.
-- `POST /api/v1/users/register` → create user (JSON: `email`, `password`).
+```mermaid
+flowchart LR
+    subgraph Entrypoint
+        CMD[cmd/main.go]
+    end
+    subgraph Composition
+        APP[internal/app\n(container & server)]
+        BOOT[internal/bootstrap\n(stacks & router wiring)]
+    end
+    subgraph Interface
+        HTTP[internal/interface/http\n(router & handlers)]
+        PORTS[internal/interface/core/ports\n(repo, security/JWT)]
+    end
+    subgraph Usecase
+        UC[internal/usecase\n(auth, user)]
+    end
+    subgraph Domain
+        DOM[internal/domain\n(user entities)]
+    end
+    subgraph Infrastructure
+        ENT[internal/infrastructure/ent\n(db client)]
+        REPO[internal/infrastructure/repository\n(user repo)]
+        JWT[internal/infrastructure/jwt\n(jwt service)]
+    end
+    subgraph Shared
+        PKG[pkg/\nhttpx, jwtx, logger]
+    end
 
-## Architecture highlights
-- Dependency direction flows inward: interface → usecase → domain; infrastructure implements ports.
-- Ent client is built in `internal/app`, repositories translate to domain entities.
-- Request validation happens in DTOs and domain entities; handlers stay thin and delegate to use cases.
+    CMD --> APP --> BOOT --> HTTP --> UC --> DOM
+    HTTP --> PORTS
+    UC --> PORTS
+    PORTS -.implements .-> ENT
+    PORTS -.implements .-> REPO
+    PORTS -.implements .-> JWT
+    ENT -.uses .-> PKG
+    REPO -.uses .-> ENT
+    JWT -.wraps .-> PKG
+    UC -.uses .-> PKG
+```
 
-## Development notes
-- Generated ent code lives in `ent/`; run `go generate ./ent` (with ent installed) after schema changes.
-- Tests are not yet included; add per-layer tests as you extend functionality.
+## HTTP Surface
+- `GET /health`
+- `POST /api/v1/users/register` — create user (JSON: `email`, `password`)
+- `POST /api/v1/auth/login` — validate credentials, returns `{ token, user }`
+
+## Configuration
+Environment variables (via Viper; `.` becomes `_`):
+- `APP_PORT` (int)
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_AUTO_MIGRATE`
+- `JWT_SECRET` (string), `JWT_DURATION_MINUTES` (int)
+
+Sample `.env` is included; set a real `JWT_SECRET` in non-dev environments.
+
+## Run
+```bash
+go run ./cmd
+```
+Server listens on `:${APP_PORT}` (default 0 if unset).
+
+## Development Notes
+- Ent: edit schemas under `ent/schema`, run `go generate ./ent` to regenerate code.
+- JWT: `internal/infrastructure/jwt.Service` wraps `pkg/jwtx` and is injected via the JWT port.
+- Tests are not yet added; consider per-layer tests (usecase with mocks, infra with DB, handler/route with httptest).
