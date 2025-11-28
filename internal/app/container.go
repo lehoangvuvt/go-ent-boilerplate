@@ -3,12 +3,16 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap"
 	"github.com/lehoangvuvt/go-ent-boilerplate/internal/config"
+	rediscache "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/cache/redis"
 	entdb "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/ent"
+	jwtinfra "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/jwt"
 	userrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/user"
+	"github.com/redis/go-redis/v9"
 )
 
 type Container struct {
@@ -24,9 +28,27 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 
 	userRepo := userrepository.NewUserRepository(entDB.Client())
 
+	jwtDuration := time.Duration(cfg.JWTConfig.Duration) * time.Second
+	jwtService := jwtinfra.NewService(cfg.JWTConfig.Secret, jwtDuration)
+
+	cacheService := rediscache.NewRedisCache(&redis.Options{
+		Addr:     cfg.RedisConfig.Address,
+		Password: cfg.RedisConfig.Password,
+	})
+
+	err = cacheService.Ping(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("pinging Redis: %w", err)
+	}
+
 	router := bootstrap.BootstrapHandler(bootstrap.HandlerBootstrapArgs{
 		Repositories: bootstrap.Repositories{
 			UserRepository: userRepo,
+		},
+		Services: bootstrap.Services{
+			JWTService:   jwtService,
+			JWTDuration:  jwtDuration,
+			CacheService: cacheService,
 		},
 	})
 

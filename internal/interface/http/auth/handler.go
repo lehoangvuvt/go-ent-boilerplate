@@ -30,11 +30,11 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.loginUC.Execute(r.Context(), req)
+	resp, err := h.loginUC.Execute(r.Context(), req)
 	if err != nil {
 		httpx.ToJSON(w, map[string]string{"error": err.Error()}, http.StatusUnauthorized)
 		return
 	}
 
-	httpx.ToJSON(w, user, http.StatusOK)
+	httpx.ToJSON(w, resp, http.StatusOK)
 }

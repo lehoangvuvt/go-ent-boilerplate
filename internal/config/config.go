@@ -10,8 +10,10 @@ import (
 )
 
 type Config struct {
-	AppConfig AppConfig `mapstructure:"app" validate:"required"`
-	DBConfig  DBConfig  `mapstructure:"db" validate:"required"`
+	AppConfig   AppConfig   `mapstructure:"app" validate:"required"`
+	DBConfig    DBConfig    `mapstructure:"db" validate:"required"`
+	JWTConfig   JWTConfig   `mapstructure:"jwt" validate:"required"`
+	RedisConfig RedisConfig `mapstructure:"redis" validate:"required"`
 }
 
 type AppConfig struct {
@@ -29,6 +31,16 @@ type DBConfig struct {
 	Password    string `mapstructure:"password" validate:"required"`
 }
 
+type JWTConfig struct {
+	Secret   string `mapstructure:"secret" validate:"required"`
+	Duration int    `mapstructure:"duration" validate:"required,gt=0"`
+}
+
+type RedisConfig struct {
+	Address  string `mapstructure:"address" validate:"required"`
+	Password string `mapstructure:"password"`
+}
+
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 	v := viper.New()
@@ -43,6 +55,12 @@ func Load() (*Config, error) {
 	v.SetDefault("db.user", "")
 	v.SetDefault("db.password", "")
 	v.SetDefault("db.auto_migrate", true)
+
+	v.SetDefault("jwt.secret", "")
+	v.SetDefault("jwt.duration", 0)
+
+	v.SetDefault("redis.address", "")
+	v.SetDefault("redis.password", "")
 
 	cfg := new(Config)
 	if err := v.Unmarshal(cfg); err != nil {
