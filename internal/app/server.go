@@ -15,13 +15,13 @@ import (
 func StartServer(ctx context.Context, cfg *config.Config, r *chi.Mux) error {
 	slog := logger.GetSugaredLogger()
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.AppConfig.Port),
+		Addr:    fmt.Sprintf(":%d", cfg.App.Port),
 		Handler: r,
 	}
 
 	errCh := make(chan error, 1)
 	go func() {
-		slog.Infof("listening on :%d", cfg.AppConfig.Port)
+		slog.Infof("listening on :%d", cfg.App.Port)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
 		}

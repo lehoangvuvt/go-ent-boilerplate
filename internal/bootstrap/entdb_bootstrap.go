@@ -18,17 +18,17 @@ type BuildDSNParams struct {
 
 func BootstrapEntDB(ctx context.Context, cfg *config.Config) (*entdb.Client, error) {
 	dsn := buildDSN(BuildDSNParams{
-		User:     cfg.DBConfig.User,
-		Password: cfg.DBConfig.Password,
-		Name:     cfg.DBConfig.Name,
-		Host:     cfg.DBConfig.Host,
-		Port:     cfg.DBConfig.Port,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
+		Name:     cfg.DB.Name,
+		Host:     cfg.DB.Host,
+		Port:     cfg.DB.Port,
 	})
 
 	entDB, err := entdb.New(ctx, entdb.Config{
 		Driver:      "postgres",
 		DSN:         dsn,
-		AutoMigrate: cfg.DBConfig.AutoMigrate,
+		AutoMigrate: cfg.DB.AutoMigrate,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("bootstrapping ent db: %w", err)

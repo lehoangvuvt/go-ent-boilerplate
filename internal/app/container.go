@@ -31,12 +31,12 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 	userRepo := userrepository.NewUserRepository(entDB.Client())
 	transactionRepo := transactionrepository.NewTransactionRepository(entDB.Client())
 
-	jwtDuration := time.Duration(cfg.JWTConfig.Duration) * time.Second
-	jwtService := jwtinfra.NewService(cfg.JWTConfig.Secret, jwtDuration)
+	jwtDuration := time.Duration(cfg.JWT.Duration) * time.Second
+	jwtService := jwtinfra.NewService(cfg.JWT.Secret, jwtDuration)
 
 	cacheService := rediscache.NewRedisCache(&redis.Options{
-		Addr:     cfg.RedisConfig.Address,
-		Password: cfg.RedisConfig.Password,
+		Addr:     cfg.Redis.Address,
+		Password: cfg.Redis.Password,
 	})
 
 	err = cacheService.Ping(ctx)
@@ -46,8 +46,8 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 
 	idempotencyStore := bootstrapstack.BuildIdempotencyStore(
 		bootstrapstack.BuildIdempotencyStoreArgs{
-			RedisAddr: cfg.RedisConfig.Address,
-			Password:  cfg.RedisConfig.Password,
+			RedisAddr: cfg.Redis.Address,
+			Password:  cfg.Redis.Password,
 			TTL:       10 * time.Minute,
 		},
 	)
