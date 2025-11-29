@@ -10,12 +10,12 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/predicate"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/transaction"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/user"
+	transactionmethoddomain "github.com/lehoangvuvt/go-ent-boilerplate/internal/domain/transaction/method"
 )
 
 // TransactionUpdate is the builder for updating Transaction entities.
@@ -109,14 +109,8 @@ func (_u *TransactionUpdate) SetNillableMethod(v *transaction.Method) *Transacti
 }
 
 // SetVisaDetails sets the "visa_details" field.
-func (_u *TransactionUpdate) SetVisaDetails(v []uint8) *TransactionUpdate {
+func (_u *TransactionUpdate) SetVisaDetails(v *transactionmethoddomain.VisaDetails) *TransactionUpdate {
 	_u.mutation.SetVisaDetails(v)
-	return _u
-}
-
-// AppendVisaDetails appends value to the "visa_details" field.
-func (_u *TransactionUpdate) AppendVisaDetails(v []uint8) *TransactionUpdate {
-	_u.mutation.AppendVisaDetails(v)
 	return _u
 }
 
@@ -127,14 +121,8 @@ func (_u *TransactionUpdate) ClearVisaDetails() *TransactionUpdate {
 }
 
 // SetBankingDetails sets the "banking_details" field.
-func (_u *TransactionUpdate) SetBankingDetails(v []uint8) *TransactionUpdate {
+func (_u *TransactionUpdate) SetBankingDetails(v *transactionmethoddomain.BankingDetails) *TransactionUpdate {
 	_u.mutation.SetBankingDetails(v)
-	return _u
-}
-
-// AppendBankingDetails appends value to the "banking_details" field.
-func (_u *TransactionUpdate) AppendBankingDetails(v []uint8) *TransactionUpdate {
-	_u.mutation.AppendBankingDetails(v)
 	return _u
 }
 
@@ -145,14 +133,8 @@ func (_u *TransactionUpdate) ClearBankingDetails() *TransactionUpdate {
 }
 
 // SetEwalletDetails sets the "ewallet_details" field.
-func (_u *TransactionUpdate) SetEwalletDetails(v []uint8) *TransactionUpdate {
+func (_u *TransactionUpdate) SetEwalletDetails(v *transactionmethoddomain.EWalletDetails) *TransactionUpdate {
 	_u.mutation.SetEwalletDetails(v)
-	return _u
-}
-
-// AppendEwalletDetails appends value to the "ewallet_details" field.
-func (_u *TransactionUpdate) AppendEwalletDetails(v []uint8) *TransactionUpdate {
-	_u.mutation.AppendEwalletDetails(v)
 	return _u
 }
 
@@ -163,14 +145,8 @@ func (_u *TransactionUpdate) ClearEwalletDetails() *TransactionUpdate {
 }
 
 // SetQrDetails sets the "qr_details" field.
-func (_u *TransactionUpdate) SetQrDetails(v []uint8) *TransactionUpdate {
+func (_u *TransactionUpdate) SetQrDetails(v *transactionmethoddomain.QRDetails) *TransactionUpdate {
 	_u.mutation.SetQrDetails(v)
-	return _u
-}
-
-// AppendQrDetails appends value to the "qr_details" field.
-func (_u *TransactionUpdate) AppendQrDetails(v []uint8) *TransactionUpdate {
-	_u.mutation.AppendQrDetails(v)
 	return _u
 }
 
@@ -300,21 +276,11 @@ func (_u *TransactionUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.VisaDetails(); ok {
 		_spec.SetField(transaction.FieldVisaDetails, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedVisaDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldVisaDetails, value)
-		})
-	}
 	if _u.mutation.VisaDetailsCleared() {
 		_spec.ClearField(transaction.FieldVisaDetails, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.BankingDetails(); ok {
 		_spec.SetField(transaction.FieldBankingDetails, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedBankingDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldBankingDetails, value)
-		})
 	}
 	if _u.mutation.BankingDetailsCleared() {
 		_spec.ClearField(transaction.FieldBankingDetails, field.TypeJSON)
@@ -322,21 +288,11 @@ func (_u *TransactionUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.EwalletDetails(); ok {
 		_spec.SetField(transaction.FieldEwalletDetails, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedEwalletDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldEwalletDetails, value)
-		})
-	}
 	if _u.mutation.EwalletDetailsCleared() {
 		_spec.ClearField(transaction.FieldEwalletDetails, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.QrDetails(); ok {
 		_spec.SetField(transaction.FieldQrDetails, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedQrDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldQrDetails, value)
-		})
 	}
 	if _u.mutation.QrDetailsCleared() {
 		_spec.ClearField(transaction.FieldQrDetails, field.TypeJSON)
@@ -474,14 +430,8 @@ func (_u *TransactionUpdateOne) SetNillableMethod(v *transaction.Method) *Transa
 }
 
 // SetVisaDetails sets the "visa_details" field.
-func (_u *TransactionUpdateOne) SetVisaDetails(v []uint8) *TransactionUpdateOne {
+func (_u *TransactionUpdateOne) SetVisaDetails(v *transactionmethoddomain.VisaDetails) *TransactionUpdateOne {
 	_u.mutation.SetVisaDetails(v)
-	return _u
-}
-
-// AppendVisaDetails appends value to the "visa_details" field.
-func (_u *TransactionUpdateOne) AppendVisaDetails(v []uint8) *TransactionUpdateOne {
-	_u.mutation.AppendVisaDetails(v)
 	return _u
 }
 
@@ -492,14 +442,8 @@ func (_u *TransactionUpdateOne) ClearVisaDetails() *TransactionUpdateOne {
 }
 
 // SetBankingDetails sets the "banking_details" field.
-func (_u *TransactionUpdateOne) SetBankingDetails(v []uint8) *TransactionUpdateOne {
+func (_u *TransactionUpdateOne) SetBankingDetails(v *transactionmethoddomain.BankingDetails) *TransactionUpdateOne {
 	_u.mutation.SetBankingDetails(v)
-	return _u
-}
-
-// AppendBankingDetails appends value to the "banking_details" field.
-func (_u *TransactionUpdateOne) AppendBankingDetails(v []uint8) *TransactionUpdateOne {
-	_u.mutation.AppendBankingDetails(v)
 	return _u
 }
 
@@ -510,14 +454,8 @@ func (_u *TransactionUpdateOne) ClearBankingDetails() *TransactionUpdateOne {
 }
 
 // SetEwalletDetails sets the "ewallet_details" field.
-func (_u *TransactionUpdateOne) SetEwalletDetails(v []uint8) *TransactionUpdateOne {
+func (_u *TransactionUpdateOne) SetEwalletDetails(v *transactionmethoddomain.EWalletDetails) *TransactionUpdateOne {
 	_u.mutation.SetEwalletDetails(v)
-	return _u
-}
-
-// AppendEwalletDetails appends value to the "ewallet_details" field.
-func (_u *TransactionUpdateOne) AppendEwalletDetails(v []uint8) *TransactionUpdateOne {
-	_u.mutation.AppendEwalletDetails(v)
 	return _u
 }
 
@@ -528,14 +466,8 @@ func (_u *TransactionUpdateOne) ClearEwalletDetails() *TransactionUpdateOne {
 }
 
 // SetQrDetails sets the "qr_details" field.
-func (_u *TransactionUpdateOne) SetQrDetails(v []uint8) *TransactionUpdateOne {
+func (_u *TransactionUpdateOne) SetQrDetails(v *transactionmethoddomain.QRDetails) *TransactionUpdateOne {
 	_u.mutation.SetQrDetails(v)
-	return _u
-}
-
-// AppendQrDetails appends value to the "qr_details" field.
-func (_u *TransactionUpdateOne) AppendQrDetails(v []uint8) *TransactionUpdateOne {
-	_u.mutation.AppendQrDetails(v)
 	return _u
 }
 
@@ -695,21 +627,11 @@ func (_u *TransactionUpdateOne) sqlSave(ctx context.Context) (_node *Transaction
 	if value, ok := _u.mutation.VisaDetails(); ok {
 		_spec.SetField(transaction.FieldVisaDetails, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedVisaDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldVisaDetails, value)
-		})
-	}
 	if _u.mutation.VisaDetailsCleared() {
 		_spec.ClearField(transaction.FieldVisaDetails, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.BankingDetails(); ok {
 		_spec.SetField(transaction.FieldBankingDetails, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedBankingDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldBankingDetails, value)
-		})
 	}
 	if _u.mutation.BankingDetailsCleared() {
 		_spec.ClearField(transaction.FieldBankingDetails, field.TypeJSON)
@@ -717,21 +639,11 @@ func (_u *TransactionUpdateOne) sqlSave(ctx context.Context) (_node *Transaction
 	if value, ok := _u.mutation.EwalletDetails(); ok {
 		_spec.SetField(transaction.FieldEwalletDetails, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedEwalletDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldEwalletDetails, value)
-		})
-	}
 	if _u.mutation.EwalletDetailsCleared() {
 		_spec.ClearField(transaction.FieldEwalletDetails, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.QrDetails(); ok {
 		_spec.SetField(transaction.FieldQrDetails, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedQrDetails(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, transaction.FieldQrDetails, value)
-		})
 	}
 	if _u.mutation.QrDetailsCleared() {
 		_spec.ClearField(transaction.FieldQrDetails, field.TypeJSON)

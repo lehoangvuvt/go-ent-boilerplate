@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/transaction"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/user"
+	transactionmethoddomain "github.com/lehoangvuvt/go-ent-boilerplate/internal/domain/transaction/method"
 )
 
 // Transaction is the model entity for the Transaction schema.
@@ -31,13 +32,13 @@ type Transaction struct {
 	// Method holds the value of the "method" field.
 	Method transaction.Method `json:"method,omitempty"`
 	// VisaDetails holds the value of the "visa_details" field.
-	VisaDetails []uint8 `json:"visa_details,omitempty"`
+	VisaDetails *transactionmethoddomain.VisaDetails `json:"visa_details,omitempty"`
 	// BankingDetails holds the value of the "banking_details" field.
-	BankingDetails []uint8 `json:"banking_details,omitempty"`
+	BankingDetails *transactionmethoddomain.BankingDetails `json:"banking_details,omitempty"`
 	// EwalletDetails holds the value of the "ewallet_details" field.
-	EwalletDetails []uint8 `json:"ewallet_details,omitempty"`
+	EwalletDetails *transactionmethoddomain.EWalletDetails `json:"ewallet_details,omitempty"`
 	// QrDetails holds the value of the "qr_details" field.
-	QrDetails []uint8 `json:"qr_details,omitempty"`
+	QrDetails *transactionmethoddomain.QRDetails `json:"qr_details,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap"
+	bootstrapstack "github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap/stack"
 	"github.com/lehoangvuvt/go-ent-boilerplate/internal/config"
 	rediscache "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/cache/redis"
 	entdb "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/ent"
@@ -43,6 +44,14 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 		return nil, fmt.Errorf("pinging Redis: %w", err)
 	}
 
+	idempotencyStore := bootstrapstack.BuildIdempotencyStore(
+		bootstrapstack.BuildIdempotencyStoreArgs{
+			RedisAddr: cfg.RedisConfig.Address,
+			Password:  cfg.RedisConfig.Password,
+			TTL:       30 * time.Minute,
+		},
+	)
+
 	router := bootstrap.BootstrapHandler(bootstrap.HandlerBootstrapArgs{
 		Repositories: bootstrap.Repositories{
 			UserRepository:        userRepo,
@@ -52,6 +61,9 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 			JWTService:   jwtService,
 			JWTDuration:  jwtDuration,
 			CacheService: cacheService,
+		},
+		Stores: bootstrap.Stores{
+			IdempotencyStore: idempotencyStore,
 		},
 	})
 

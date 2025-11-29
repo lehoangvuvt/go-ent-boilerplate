@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	bootstrapstack "github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap/stack"
 	cacheports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/cache"
+	idempotencyports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/idempotency"
 	repositoryports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/repository"
 	securityports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/security"
 	httpmiddleware "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/middleware"
@@ -15,6 +16,7 @@ import (
 type HandlerBootstrapArgs struct {
 	Repositories Repositories
 	Services     Services
+	Stores       Stores
 }
 
 type Repositories struct {
@@ -26,6 +28,10 @@ type Services struct {
 	JWTService   securityports.JWTService
 	JWTDuration  time.Duration
 	CacheService cacheports.Cache
+}
+
+type Stores struct {
+	IdempotencyStore idempotencyports.IdempotencyStore
 }
 
 func BootstrapHandler(args HandlerBootstrapArgs) *chi.Mux {
@@ -50,6 +56,7 @@ func BootstrapHandler(args HandlerBootstrapArgs) *chi.Mux {
 		AuthHandler:        authHandler,
 		TransactionHandler: transactionHandler,
 		AuthMiddleware:     authMW,
+		IdempotencyStore:   args.Stores.IdempotencyStore,
 	})
 
 	return router

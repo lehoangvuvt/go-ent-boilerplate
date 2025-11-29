@@ -13,7 +13,6 @@ type ctxKey string
 
 const authClaimsCtxKey ctxKey = "authClaims"
 
-// AuthMiddleware verifies JWT bearer tokens and attaches auth claims to the request context.
 type AuthMiddleware struct {
 	jwtService securityports.JWTService
 }
@@ -47,7 +46,6 @@ func (m *AuthMiddleware) RequireJWT(next http.Handler) http.Handler {
 	})
 }
 
-// FromContext extracts AuthClaims set by RequireJWT middleware.
 func FromContext(ctx context.Context) (authusecasedto.AuthClaims, bool) {
 	val := ctx.Value(authClaimsCtxKey)
 	if claims, ok := val.(*authusecasedto.AuthClaims); ok && claims != nil {

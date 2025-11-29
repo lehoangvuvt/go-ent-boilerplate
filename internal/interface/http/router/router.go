@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	idempotencyports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/idempotency"
 	httpauth "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/auth"
 	httpmiddleware "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/middleware"
 	httptransaction "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/transaction"
@@ -16,10 +17,13 @@ type NewRouterArgs struct {
 	AuthHandler        *httpauth.AuthHandler
 	TransactionHandler *httptransaction.TransactionHandler
 	AuthMiddleware     *httpmiddleware.AuthMiddleware
+	IdempotencyStore   idempotencyports.IdempotencyStore
 }
 
 func NewRouter(args NewRouterArgs) *chi.Mux {
 	r := chi.NewRouter()
+	idempotencyMiddleware := httpmiddleware.NewIdempotencyMiddleware(args.IdempotencyStore)
+	r.Use(idempotencyMiddleware.Handler)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)

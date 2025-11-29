@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/transaction"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/user"
+	transactionmethoddomain "github.com/lehoangvuvt/go-ent-boilerplate/internal/domain/transaction/method"
 )
 
 // TransactionCreate is the builder for creating a Transaction entity.
@@ -61,25 +62,25 @@ func (_c *TransactionCreate) SetMethod(v transaction.Method) *TransactionCreate 
 }
 
 // SetVisaDetails sets the "visa_details" field.
-func (_c *TransactionCreate) SetVisaDetails(v []uint8) *TransactionCreate {
+func (_c *TransactionCreate) SetVisaDetails(v *transactionmethoddomain.VisaDetails) *TransactionCreate {
 	_c.mutation.SetVisaDetails(v)
 	return _c
 }
 
 // SetBankingDetails sets the "banking_details" field.
-func (_c *TransactionCreate) SetBankingDetails(v []uint8) *TransactionCreate {
+func (_c *TransactionCreate) SetBankingDetails(v *transactionmethoddomain.BankingDetails) *TransactionCreate {
 	_c.mutation.SetBankingDetails(v)
 	return _c
 }
 
 // SetEwalletDetails sets the "ewallet_details" field.
-func (_c *TransactionCreate) SetEwalletDetails(v []uint8) *TransactionCreate {
+func (_c *TransactionCreate) SetEwalletDetails(v *transactionmethoddomain.EWalletDetails) *TransactionCreate {
 	_c.mutation.SetEwalletDetails(v)
 	return _c
 }
 
 // SetQrDetails sets the "qr_details" field.
-func (_c *TransactionCreate) SetQrDetails(v []uint8) *TransactionCreate {
+func (_c *TransactionCreate) SetQrDetails(v *transactionmethoddomain.QRDetails) *TransactionCreate {
 	_c.mutation.SetQrDetails(v)
 	return _c
 }

@@ -1,8 +1,6 @@
 package transactionrepository
 
 import (
-	"encoding/json"
-
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/transaction"
 	transactiondomain "github.com/lehoangvuvt/go-ent-boilerplate/internal/domain/transaction"
@@ -22,27 +20,23 @@ func toDomain(et *ent.Transaction) (*transactiondomain.Transaction, error) {
 	}
 
 	if et.VisaDetails != nil {
-		var visa transactionmethoddomain.VisaDetails
-		_ = json.Unmarshal(et.VisaDetails, &visa)
-		dt.Visa = &visa
+		v := *et.VisaDetails
+		dt.Visa = &v
 	}
 
 	if et.BankingDetails != nil {
-		var bank transactionmethoddomain.BankingDetails
-		_ = json.Unmarshal(et.BankingDetails, &bank)
-		dt.Banking = &bank
+		b := *et.BankingDetails
+		dt.Banking = &b
 	}
 
 	if et.EwalletDetails != nil {
-		var ew transactionmethoddomain.EWalletDetails
-		_ = json.Unmarshal(et.EwalletDetails, &ew)
-		dt.EWallet = &ew
+		e := *et.EwalletDetails
+		dt.EWallet = &e
 	}
 
 	if et.QrDetails != nil {
-		var qr transactionmethoddomain.QRDetails
-		_ = json.Unmarshal(et.QrDetails, &qr)
-		dt.QRPay = &qr
+		q := *et.QrDetails
+		dt.QRPay = &q
 	}
 
 	return dt, nil
@@ -72,23 +66,19 @@ func applyDomainToCreate(b *ent.TransactionCreate, dt *transactiondomain.Transac
 		SetUpdatedAt(dt.UpdatedAt)
 
 	if dt.Visa != nil {
-		raw, _ := json.Marshal(dt.Visa)
-		b.SetVisaDetails(raw)
+		b.SetVisaDetails(dt.Visa)
 	}
 
 	if dt.Banking != nil {
-		raw, _ := json.Marshal(dt.Banking)
-		b.SetBankingDetails(raw)
+		b.SetBankingDetails(dt.Banking)
 	}
 
 	if dt.EWallet != nil {
-		raw, _ := json.Marshal(dt.EWallet)
-		b.SetEwalletDetails(raw)
+		b.SetEwalletDetails(dt.EWallet)
 	}
 
 	if dt.QRPay != nil {
-		raw, _ := json.Marshal(dt.QRPay)
-		b.SetQrDetails(raw)
+		b.SetQrDetails(dt.QRPay)
 	}
 }
 
@@ -102,29 +92,25 @@ func applyDomainToUpdate(b *ent.TransactionUpdateOne, dt *transactiondomain.Tran
 		SetUpdatedAt(dt.UpdatedAt)
 
 	if dt.Visa != nil {
-		raw, _ := json.Marshal(dt.Visa)
-		b.SetVisaDetails(raw)
+		b.SetVisaDetails(dt.Visa)
 	} else {
 		b.ClearVisaDetails()
 	}
 
 	if dt.Banking != nil {
-		raw, _ := json.Marshal(dt.Banking)
-		b.SetBankingDetails(raw)
+		b.SetBankingDetails(dt.Banking)
 	} else {
 		b.ClearBankingDetails()
 	}
 
 	if dt.EWallet != nil {
-		raw, _ := json.Marshal(dt.EWallet)
-		b.SetEwalletDetails(raw)
+		b.SetEwalletDetails(dt.EWallet)
 	} else {
 		b.ClearEwalletDetails()
 	}
 
 	if dt.QRPay != nil {
-		raw, _ := json.Marshal(dt.QRPay)
-		b.SetQrDetails(raw)
+		b.SetQrDetails(dt.QRPay)
 	} else {
 		b.ClearQrDetails()
 	}

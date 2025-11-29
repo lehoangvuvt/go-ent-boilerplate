@@ -16,7 +16,6 @@ func parseTransactionFilter(r *http.Request) (repositoryports.TransactionFilter,
 
 	var filter repositoryports.TransactionFilter
 
-	// user_id
 	if v := q.Get("user_id"); v != "" {
 		uid, err := uuid.Parse(v)
 		if err != nil {

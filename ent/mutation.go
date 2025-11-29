@@ -16,6 +16,7 @@ import (
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/predicate"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/transaction"
 	"github.com/lehoangvuvt/go-ent-boilerplate/ent/user"
+	transactionmethoddomain "github.com/lehoangvuvt/go-ent-boilerplate/internal/domain/transaction/method"
 )
 
 const (
@@ -618,30 +619,26 @@ func (m *PostMutation) ResetEdge(name string) error {
 // TransactionMutation represents an operation that mutates the Transaction nodes in the graph.
 type TransactionMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	amount                *int64
-	addamount             *int64
-	currency              *string
-	status                *transaction.Status
-	method                *transaction.Method
-	visa_details          *[]uint8
-	appendvisa_details    []uint8
-	banking_details       *[]uint8
-	appendbanking_details []uint8
-	ewallet_details       *[]uint8
-	appendewallet_details []uint8
-	qr_details            *[]uint8
-	appendqr_details      []uint8
-	created_at            *time.Time
-	updated_at            *time.Time
-	clearedFields         map[string]struct{}
-	user                  *uuid.UUID
-	cleareduser           bool
-	done                  bool
-	oldValue              func(context.Context) (*Transaction, error)
-	predicates            []predicate.Transaction
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	amount          *int64
+	addamount       *int64
+	currency        *string
+	status          *transaction.Status
+	method          *transaction.Method
+	visa_details    **transactionmethoddomain.VisaDetails
+	banking_details **transactionmethoddomain.BankingDetails
+	ewallet_details **transactionmethoddomain.EWalletDetails
+	qr_details      **transactionmethoddomain.QRDetails
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	user            *uuid.UUID
+	cleareduser     bool
+	done            bool
+	oldValue        func(context.Context) (*Transaction, error)
+	predicates      []predicate.Transaction
 }
 
 var _ ent.Mutation = (*TransactionMutation)(nil)
@@ -949,13 +946,12 @@ func (m *TransactionMutation) ResetMethod() {
 }
 
 // SetVisaDetails sets the "visa_details" field.
-func (m *TransactionMutation) SetVisaDetails(u []uint8) {
-	m.visa_details = &u
-	m.appendvisa_details = nil
+func (m *TransactionMutation) SetVisaDetails(td *transactionmethoddomain.VisaDetails) {
+	m.visa_details = &td
 }
 
 // VisaDetails returns the value of the "visa_details" field in the mutation.
-func (m *TransactionMutation) VisaDetails() (r []uint8, exists bool) {
+func (m *TransactionMutation) VisaDetails() (r *transactionmethoddomain.VisaDetails, exists bool) {
 	v := m.visa_details
 	if v == nil {
 		return
@@ -966,7 +962,7 @@ func (m *TransactionMutation) VisaDetails() (r []uint8, exists bool) {
 // OldVisaDetails returns the old "visa_details" field's value of the Transaction entity.
 // If the Transaction object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TransactionMutation) OldVisaDetails(ctx context.Context) (v []uint8, err error) {
+func (m *TransactionMutation) OldVisaDetails(ctx context.Context) (v *transactionmethoddomain.VisaDetails, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldVisaDetails is only allowed on UpdateOne operations")
 	}
@@ -980,23 +976,9 @@ func (m *TransactionMutation) OldVisaDetails(ctx context.Context) (v []uint8, er
 	return oldValue.VisaDetails, nil
 }
 
-// AppendVisaDetails adds u to the "visa_details" field.
-func (m *TransactionMutation) AppendVisaDetails(u []uint8) {
-	m.appendvisa_details = append(m.appendvisa_details, u...)
-}
-
-// AppendedVisaDetails returns the list of values that were appended to the "visa_details" field in this mutation.
-func (m *TransactionMutation) AppendedVisaDetails() ([]uint8, bool) {
-	if len(m.appendvisa_details) == 0 {
-		return nil, false
-	}
-	return m.appendvisa_details, true
-}
-
 // ClearVisaDetails clears the value of the "visa_details" field.
 func (m *TransactionMutation) ClearVisaDetails() {
 	m.visa_details = nil
-	m.appendvisa_details = nil
 	m.clearedFields[transaction.FieldVisaDetails] = struct{}{}
 }
 
@@ -1009,18 +991,16 @@ func (m *TransactionMutation) VisaDetailsCleared() bool {
 // ResetVisaDetails resets all changes to the "visa_details" field.
 func (m *TransactionMutation) ResetVisaDetails() {
 	m.visa_details = nil
-	m.appendvisa_details = nil
 	delete(m.clearedFields, transaction.FieldVisaDetails)
 }
 
 // SetBankingDetails sets the "banking_details" field.
-func (m *TransactionMutation) SetBankingDetails(u []uint8) {
-	m.banking_details = &u
-	m.appendbanking_details = nil
+func (m *TransactionMutation) SetBankingDetails(td *transactionmethoddomain.BankingDetails) {
+	m.banking_details = &td
 }
 
 // BankingDetails returns the value of the "banking_details" field in the mutation.
-func (m *TransactionMutation) BankingDetails() (r []uint8, exists bool) {
+func (m *TransactionMutation) BankingDetails() (r *transactionmethoddomain.BankingDetails, exists bool) {
 	v := m.banking_details
 	if v == nil {
 		return
@@ -1031,7 +1011,7 @@ func (m *TransactionMutation) BankingDetails() (r []uint8, exists bool) {
 // OldBankingDetails returns the old "banking_details" field's value of the Transaction entity.
 // If the Transaction object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TransactionMutation) OldBankingDetails(ctx context.Context) (v []uint8, err error) {
+func (m *TransactionMutation) OldBankingDetails(ctx context.Context) (v *transactionmethoddomain.BankingDetails, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldBankingDetails is only allowed on UpdateOne operations")
 	}
@@ -1045,23 +1025,9 @@ func (m *TransactionMutation) OldBankingDetails(ctx context.Context) (v []uint8,
 	return oldValue.BankingDetails, nil
 }
 
-// AppendBankingDetails adds u to the "banking_details" field.
-func (m *TransactionMutation) AppendBankingDetails(u []uint8) {
-	m.appendbanking_details = append(m.appendbanking_details, u...)
-}
-
-// AppendedBankingDetails returns the list of values that were appended to the "banking_details" field in this mutation.
-func (m *TransactionMutation) AppendedBankingDetails() ([]uint8, bool) {
-	if len(m.appendbanking_details) == 0 {
-		return nil, false
-	}
-	return m.appendbanking_details, true
-}
-
 // ClearBankingDetails clears the value of the "banking_details" field.
 func (m *TransactionMutation) ClearBankingDetails() {
 	m.banking_details = nil
-	m.appendbanking_details = nil
 	m.clearedFields[transaction.FieldBankingDetails] = struct{}{}
 }
 
@@ -1074,18 +1040,16 @@ func (m *TransactionMutation) BankingDetailsCleared() bool {
 // ResetBankingDetails resets all changes to the "banking_details" field.
 func (m *TransactionMutation) ResetBankingDetails() {
 	m.banking_details = nil
-	m.appendbanking_details = nil
 	delete(m.clearedFields, transaction.FieldBankingDetails)
 }
 
 // SetEwalletDetails sets the "ewallet_details" field.
-func (m *TransactionMutation) SetEwalletDetails(u []uint8) {
-	m.ewallet_details = &u
-	m.appendewallet_details = nil
+func (m *TransactionMutation) SetEwalletDetails(twd *transactionmethoddomain.EWalletDetails) {
+	m.ewallet_details = &twd
 }
 
 // EwalletDetails returns the value of the "ewallet_details" field in the mutation.
-func (m *TransactionMutation) EwalletDetails() (r []uint8, exists bool) {
+func (m *TransactionMutation) EwalletDetails() (r *transactionmethoddomain.EWalletDetails, exists bool) {
 	v := m.ewallet_details
 	if v == nil {
 		return
@@ -1096,7 +1060,7 @@ func (m *TransactionMutation) EwalletDetails() (r []uint8, exists bool) {
 // OldEwalletDetails returns the old "ewallet_details" field's value of the Transaction entity.
 // If the Transaction object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TransactionMutation) OldEwalletDetails(ctx context.Context) (v []uint8, err error) {
+func (m *TransactionMutation) OldEwalletDetails(ctx context.Context) (v *transactionmethoddomain.EWalletDetails, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEwalletDetails is only allowed on UpdateOne operations")
 	}
@@ -1110,23 +1074,9 @@ func (m *TransactionMutation) OldEwalletDetails(ctx context.Context) (v []uint8,
 	return oldValue.EwalletDetails, nil
 }
 
-// AppendEwalletDetails adds u to the "ewallet_details" field.
-func (m *TransactionMutation) AppendEwalletDetails(u []uint8) {
-	m.appendewallet_details = append(m.appendewallet_details, u...)
-}
-
-// AppendedEwalletDetails returns the list of values that were appended to the "ewallet_details" field in this mutation.
-func (m *TransactionMutation) AppendedEwalletDetails() ([]uint8, bool) {
-	if len(m.appendewallet_details) == 0 {
-		return nil, false
-	}
-	return m.appendewallet_details, true
-}
-
 // ClearEwalletDetails clears the value of the "ewallet_details" field.
 func (m *TransactionMutation) ClearEwalletDetails() {
 	m.ewallet_details = nil
-	m.appendewallet_details = nil
 	m.clearedFields[transaction.FieldEwalletDetails] = struct{}{}
 }
 
@@ -1139,18 +1089,16 @@ func (m *TransactionMutation) EwalletDetailsCleared() bool {
 // ResetEwalletDetails resets all changes to the "ewallet_details" field.
 func (m *TransactionMutation) ResetEwalletDetails() {
 	m.ewallet_details = nil
-	m.appendewallet_details = nil
 	delete(m.clearedFields, transaction.FieldEwalletDetails)
 }
 
 // SetQrDetails sets the "qr_details" field.
-func (m *TransactionMutation) SetQrDetails(u []uint8) {
-	m.qr_details = &u
-	m.appendqr_details = nil
+func (m *TransactionMutation) SetQrDetails(td *transactionmethoddomain.QRDetails) {
+	m.qr_details = &td
 }
 
 // QrDetails returns the value of the "qr_details" field in the mutation.
-func (m *TransactionMutation) QrDetails() (r []uint8, exists bool) {
+func (m *TransactionMutation) QrDetails() (r *transactionmethoddomain.QRDetails, exists bool) {
 	v := m.qr_details
 	if v == nil {
 		return
@@ -1161,7 +1109,7 @@ func (m *TransactionMutation) QrDetails() (r []uint8, exists bool) {
 // OldQrDetails returns the old "qr_details" field's value of the Transaction entity.
 // If the Transaction object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TransactionMutation) OldQrDetails(ctx context.Context) (v []uint8, err error) {
+func (m *TransactionMutation) OldQrDetails(ctx context.Context) (v *transactionmethoddomain.QRDetails, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldQrDetails is only allowed on UpdateOne operations")
 	}
@@ -1175,23 +1123,9 @@ func (m *TransactionMutation) OldQrDetails(ctx context.Context) (v []uint8, err 
 	return oldValue.QrDetails, nil
 }
 
-// AppendQrDetails adds u to the "qr_details" field.
-func (m *TransactionMutation) AppendQrDetails(u []uint8) {
-	m.appendqr_details = append(m.appendqr_details, u...)
-}
-
-// AppendedQrDetails returns the list of values that were appended to the "qr_details" field in this mutation.
-func (m *TransactionMutation) AppendedQrDetails() ([]uint8, bool) {
-	if len(m.appendqr_details) == 0 {
-		return nil, false
-	}
-	return m.appendqr_details, true
-}
-
 // ClearQrDetails clears the value of the "qr_details" field.
 func (m *TransactionMutation) ClearQrDetails() {
 	m.qr_details = nil
-	m.appendqr_details = nil
 	m.clearedFields[transaction.FieldQrDetails] = struct{}{}
 }
 
@@ -1204,7 +1138,6 @@ func (m *TransactionMutation) QrDetailsCleared() bool {
 // ResetQrDetails resets all changes to the "qr_details" field.
 func (m *TransactionMutation) ResetQrDetails() {
 	m.qr_details = nil
-	m.appendqr_details = nil
 	delete(m.clearedFields, transaction.FieldQrDetails)
 }
 
@@ -1481,28 +1414,28 @@ func (m *TransactionMutation) SetField(name string, value ent.Value) error {
 		m.SetMethod(v)
 		return nil
 	case transaction.FieldVisaDetails:
-		v, ok := value.([]uint8)
+		v, ok := value.(*transactionmethoddomain.VisaDetails)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVisaDetails(v)
 		return nil
 	case transaction.FieldBankingDetails:
-		v, ok := value.([]uint8)
+		v, ok := value.(*transactionmethoddomain.BankingDetails)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBankingDetails(v)
 		return nil
 	case transaction.FieldEwalletDetails:
-		v, ok := value.([]uint8)
+		v, ok := value.(*transactionmethoddomain.EWalletDetails)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEwalletDetails(v)
 		return nil
 	case transaction.FieldQrDetails:
-		v, ok := value.([]uint8)
+		v, ok := value.(*transactionmethoddomain.QRDetails)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
