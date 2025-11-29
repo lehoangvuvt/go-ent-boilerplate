@@ -48,7 +48,7 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 		bootstrapstack.BuildIdempotencyStoreArgs{
 			RedisAddr: cfg.RedisConfig.Address,
 			Password:  cfg.RedisConfig.Password,
-			TTL:       30 * time.Minute,
+			TTL:       10 * time.Minute,
 		},
 	)
 

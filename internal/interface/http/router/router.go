@@ -22,14 +22,12 @@ type NewRouterArgs struct {
 
 func NewRouter(args NewRouterArgs) *chi.Mux {
 	r := chi.NewRouter()
-	idempotencyMiddleware := httpmiddleware.NewIdempotencyMiddleware(args.IdempotencyStore)
-	r.Use(idempotencyMiddleware.Handler)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("ok"))
 	})
 
@@ -37,8 +35,16 @@ func NewRouter(args NewRouterArgs) *chi.Mux {
 		httpuser.RegisterRoutes(ur, args.UserHandler)
 		httpauth.RegisterRoutes(ur, args.AuthHandler)
 
-		protected := ur.With(args.AuthMiddleware.RequireJWT)
-		httptransaction.RegisterRoutes(protected, args.TransactionHandler)
+		ur.Group(func(pr chi.Router) {
+
+			pr.Use(args.AuthMiddleware.RequireJWT)
+
+			pr.Use(httpmiddleware.NewIdempotencyMiddleware(
+				args.IdempotencyStore,
+			).Handler)
+
+			httptransaction.RegisterRoutes(pr, args.TransactionHandler)
+		})
 	})
 
 	return r
