@@ -98,7 +98,7 @@ pkg/                 # Shared utilities
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/go-ent-boilerplate
+git clone https://github.com/lehoangvuvt/go-ent-boilerplate
 cd go-ent-boilerplate
 go mod tidy
 ```
@@ -144,10 +144,16 @@ http://localhost:8080
 
 ## Ent ORM
 
+### Create new schema:
+
+```bash
+make ent-create name=Example123
+```
+
 ### Generate code:
 
 ```bash
-go generate ./ent
+make ent-gen
 ```
 
 ### Auto migration:
@@ -171,12 +177,23 @@ internal/app/wire_sets.go
 Generate Wire code:
 
 ```bash
-go generate ./internal/app
+make wire-gen
 ```
 
 ---
 
 ## API Examples
+
+### Register
+
+**POST** `/api/v1/users/register`
+
+```json
+{
+  "email": "user@example.com",
+  "password": "123456"
+}
+```
 
 ### Login
 
