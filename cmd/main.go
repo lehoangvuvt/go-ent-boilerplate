@@ -20,7 +20,7 @@ func main() {
 	if err != nil {
 		slog.Fatalf("loading config: %v", err)
 	}
-	c, err := app.Build(ctx, cfg)
+	c, err := app.InitializeContainer(ctx, cfg)
 	if err != nil {
 		slog.Fatalf("building app: %v", err)
 	}
