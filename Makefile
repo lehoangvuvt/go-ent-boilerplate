@@ -19,6 +19,10 @@ ent-create:
 ent-gen:
 	go generate ./ent
 
+wire-gen:
+	wire ./internal/app
+
 install-tools:
 	go install github.com/swaggo/swag/cmd/swag@latest
-	go get entgo.io/ent/cmd/ent
+	go install entgo.io/ent/cmd/ent
+	go install github.com/google/wire/cmd/wire@latest
