@@ -217,4 +217,29 @@ Authorization: Bearer <token>
 Idempotency-Key: <uuid>
 ```
 
+Payload:
+
+```json
+{
+  "ID": "14a61d4f-147e-4930-bdb2-f6672a2022cf",
+  "Amount": 200000,
+  "Currency": "VND",
+  "UserID": "7938c4fa-701f-48b6-8d47-f048e97d0901",
+  "Method": "banking",
+  "Visa": null,
+  "Banking": {
+    "bank_code": "VCB",
+    "bank_name": "Vietcombank",
+    "account_number": "1234567890",
+    "reference_id": "BANK987654321",
+    "transaction_time": "2025-01-20T10:05:00Z"
+  },
+  "EWallet": null,
+  "QRPay": null,
+  "Status": "pending",
+  "CreatedAt": "2025-11-30T12:16:26.0223125+07:00",
+  "UpdatedAt": "2025-11-30T12:16:26.0223125+07:00"
+}
+```
+
 ---
