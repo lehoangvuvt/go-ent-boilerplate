@@ -147,6 +147,22 @@ http://localhost:{{ your-configured-port }}
 
 ---
 
+## Deployment (Docker Compose)
+
+```bash
+# fill secrets in .env.prod first: JWT_SECRET, SMTP_USER, SMTP_PASS, RESEND_API_KEY
+docker compose --env-file .env.prod up -d --build
+docker compose logs -f server worker
+```
+
+Notes:
+- Containers: `server` (API) and `worker` (background jobs) share the same image.
+- External deps run locally via Compose: Postgres on 5432, Redis on 6379, RabbitMQ on 5672/15672, RedisInsight on 5540.
+- `APP_PORT` in `.env.prod` maps the API to `http://localhost:${APP_PORT}`.
+- Set real production secrets before bringing the stack up; `.env.prod` supports overriding via env vars when the Compose file is parsed.
+
+---
+
 ## Ent ORM
 
 ### Create new schema:

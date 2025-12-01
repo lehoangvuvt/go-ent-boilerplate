@@ -11,11 +11,13 @@ import (
 var _validate = validator.New(validator.WithRequiredStructEnabled())
 
 type Config struct {
-	App   AppConfig   `validate:"required"`
-	DB    DBConfig    `validate:"required"`
-	JWT   JWTConfig   `validate:"required"`
-	Redis RedisConfig `validate:"required"`
-	Mail  MailConfig  `validate:"required"`
+	App      AppConfig      `validate:"required"`
+	DB       DBConfig       `validate:"required"`
+	JWT      JWTConfig      `validate:"required"`
+	Redis    RedisConfig    `validate:"required"`
+	Mail     MailConfig     `validate:"required"`
+	Resend   ResendConfig   `validate:"required"`
+	RabbitMQ RabbitMQConfig `validate:"required"`
 }
 
 type AppConfig struct {
@@ -41,11 +43,19 @@ type RedisConfig struct {
 	Password string `envconfig:"PASSWORD"`
 }
 
+type RabbitMQConfig struct {
+	DSN string `envconfig:"DSN" validate:"required"`
+}
+
 type MailConfig struct {
 	Host string `envconfig:"HOST" validate:"required"`
 	Port int    `envconfig:"PORT" validate:"required,gt=0"`
 	User string `envconfig:"USER" validate:"required"`
 	Pass string `envconfig:"PASS" validate:"required"`
+}
+
+type ResendConfig struct {
+	ApiKey string `envconfig:"API_KEY" validate:"required"`
 }
 
 func Load() (*Config, error) {
@@ -67,6 +77,12 @@ func Load() (*Config, error) {
 	}
 	if err := envconfig.Process("SMTP", &cfg.Mail); err != nil {
 		return nil, fmt.Errorf("load SMTP config: %w", err)
+	}
+	if err := envconfig.Process("RESEND", &cfg.Resend); err != nil {
+		return nil, fmt.Errorf("load RESEND config: %w", err)
+	}
+	if err := envconfig.Process("RABBITMQ", &cfg.RabbitMQ); err != nil {
+		return nil, fmt.Errorf("load RABBITMQ config: %w", err)
 	}
 
 	if err := _validate.Struct(&cfg); err != nil {

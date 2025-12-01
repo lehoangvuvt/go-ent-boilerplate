@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"github.com/google/wire"
+	bootstrapstack "github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap/stack"
 	"github.com/lehoangvuvt/go-ent-boilerplate/internal/config"
 )
 
@@ -27,4 +28,16 @@ func InitializeContainer(
 	)
 
 	return nil, nil
+}
+
+func InitializeWorker(
+	ctx context.Context,
+	cfg *config.Config,
+) (bootstrapstack.WorkerRunner, func(), error) {
+
+	wire.Build(
+		WorkerSet,
+	)
+
+	return nil, nil, nil
 }

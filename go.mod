@@ -18,6 +18,7 @@ require (
 
 require (
 	github.com/kr/pretty v0.3.1 // indirect
+	github.com/resend/resend-go/v2 v2.28.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 )
 

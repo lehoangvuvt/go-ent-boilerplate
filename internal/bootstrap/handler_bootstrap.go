@@ -8,6 +8,7 @@ import (
 	cacheports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/cache"
 	idempotencyports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/idempotency"
 	mailports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/mail"
+	queueports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/queue"
 	repositoryports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/repository"
 	securityports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/security"
 	httpmiddleware "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/middleware"
@@ -26,10 +27,15 @@ type Repositories struct {
 }
 
 type Services struct {
-	JWTService   securityports.JWTService
-	JWTDuration  time.Duration
+	JWTService  securityports.JWTService
+	JWTDuration time.Duration
+
 	CacheService cacheports.Cache
 	MailService  mailports.MailService
+
+	QueueProducer queueports.QueueProducer
+	QueueConsumer queueports.QueueConsumer
+	QueueCloser   queueports.QueueCloser
 }
 
 type Stores struct {
@@ -39,6 +45,12 @@ type Stores struct {
 func BootstrapHandler(args HandlerBootstrapArgs) *chi.Mux {
 	userHandler := bootstrapstack.BuildUserStack(bootstrapstack.BuildUserStackArgs{
 		UserRepository: args.Repositories.UserRepository,
+
+		MailService: args.Services.MailService,
+
+		QueueProducer: args.Services.QueueProducer,
+		QueueConsumer: args.Services.QueueConsumer,
+		QueueCloser:   args.Services.QueueCloser,
 	})
 
 	authHandler := bootstrapstack.BuildAuthStack(bootstrapstack.BuildAuthStackArgs{

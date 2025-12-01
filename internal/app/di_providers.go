@@ -11,16 +11,21 @@ import (
 	rediscache "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/cache/redis"
 	entdb "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/ent"
 	jwtinfra "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/jwt"
-	smtpmail "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/mail/smtp"
+	resendmail "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/mail/resend"
+	queuehandlers "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/queue/handlers"
+	rabbitmqqueue "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/queue/rabbitmq"
 	transactionrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/transaction"
 	userrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/user"
 	cacheports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/cache"
 	idempotencyports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/idempotency"
 	mailports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/mail"
+	queueports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/queue"
 	repositoryports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/repository"
 	securityports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/security"
 	"github.com/redis/go-redis/v9"
 )
+
+type ConsumerRunner func(ctx context.Context) error
 
 func provideEntDB(ctx context.Context, cfg *config.Config) (*entdb.Client, error) {
 	return bootstrap.BootstrapEntDB(ctx, cfg)
@@ -83,11 +88,54 @@ func provideHandlerArgs(
 	}
 }
 
-func provideMailService(cfg *config.Config) mailports.MailService {
-	return smtpmail.NewSMTPMailService(
-		cfg.Mail.Host,
-		cfg.Mail.Port,
-		cfg.Mail.User,
-		cfg.Mail.Pass,
-	)
+func provideResendMailService(cfg *config.Config) mailports.MailService {
+	return resendmail.NewResendMailService(cfg.Resend.ApiKey)
+}
+
+func provideQueueAdapter(cfg *config.Config) (*rabbitmqqueue.RabbitMQQueue, error) {
+	return rabbitmqqueue.NewRabbitMQQueue(cfg.RabbitMQ.DSN)
+}
+
+func provideQueueProducer(adapter *rabbitmqqueue.RabbitMQQueue) queueports.QueueProducer {
+	return adapter
+}
+
+func provideQueueConsumer(adapter *rabbitmqqueue.RabbitMQQueue) queueports.QueueConsumer {
+	return adapter
+}
+
+func provideQueueCloser(adapter *rabbitmqqueue.RabbitMQQueue) queueports.QueueCloser {
+	return adapter
+}
+
+func provideRegisterEmailHandler(
+	mail mailports.MailService,
+) queueports.QueueHandler {
+	return queuehandlers.NewRegisterEmailHandler(mail)
+}
+
+func provideQueueConsumerRunner(
+	consumer queueports.QueueConsumer,
+	handler queueports.QueueHandler,
+) ConsumerRunner {
+
+	return func(ctx context.Context) error {
+		return consumer.Consume(ctx, "send_email", handler, &queueports.ConsumeOptions{
+			AutoAck:     false,
+			Concurrency: 5,
+			Prefetch:    5,
+		})
+	}
+}
+
+func provideWorkerRunner(
+	consumer queueports.QueueConsumer,
+	closer queueports.QueueCloser,
+	handler queueports.QueueHandler,
+) bootstrapstack.WorkerRunner {
+	return bootstrapstack.BuildWorkerStack(bootstrapstack.BuildWorkerStackArgs{
+		QueueConsumer: consumer,
+		QueueCloser:   closer,
+		QueueHandler:  handler,
+	})
 }

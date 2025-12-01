@@ -23,7 +23,14 @@ var ServiceSet = wire.NewSet(
 	provideRedisOptions,
 	provideCache,
 
-	provideMailService,
+	provideResendMailService,
+
+	provideQueueAdapter,
+	provideQueueProducer,
+	provideQueueConsumer,
+	provideQueueCloser,
+	provideRegisterEmailHandler,
+	provideQueueConsumerRunner,
 
 	wire.Struct(new(bootstrap.Services), "*"),
 )
@@ -40,4 +47,13 @@ var HandlerSet = wire.NewSet(
 
 var ContainerSet = wire.NewSet(
 	wire.Struct(new(Container), "*"),
+)
+
+var WorkerSet = wire.NewSet(
+	provideQueueAdapter,
+	provideQueueConsumer,
+	provideQueueCloser,
+	provideResendMailService,
+	provideRegisterEmailHandler,
+	provideWorkerRunner,
 )

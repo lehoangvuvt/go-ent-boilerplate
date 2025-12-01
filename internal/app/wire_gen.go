@@ -9,6 +9,7 @@ package app
 import (
 	"context"
 	"github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap"
+	"github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap/stack"
 	"github.com/lehoangvuvt/go-ent-boilerplate/internal/config"
 )
 
@@ -33,12 +34,22 @@ func InitializeContainer(ctx context.Context, cfg *config.Config) (*Container, e
 	if err != nil {
 		return nil, err
 	}
-	mailService := provideMailService(cfg)
+	mailService := provideResendMailService(cfg)
+	rabbitMQQueue, err := provideQueueAdapter(cfg)
+	if err != nil {
+		return nil, err
+	}
+	queueProducer := provideQueueProducer(rabbitMQQueue)
+	queueConsumer := provideQueueConsumer(rabbitMQQueue)
+	queueCloser := provideQueueCloser(rabbitMQQueue)
 	services := bootstrap.Services{
-		JWTService:   jwtService,
-		JWTDuration:  duration,
-		CacheService: cache,
-		MailService:  mailService,
+		JWTService:    jwtService,
+		JWTDuration:   duration,
+		CacheService:  cache,
+		MailService:   mailService,
+		QueueProducer: queueProducer,
+		QueueConsumer: queueConsumer,
+		QueueCloser:   queueCloser,
 	}
 	idempotencyStore := provideIdempotencyStore(cfg)
 	stores := bootstrap.Stores{
@@ -51,4 +62,18 @@ func InitializeContainer(ctx context.Context, cfg *config.Config) (*Container, e
 		DB:     client,
 	}
 	return container, nil
+}
+
+func InitializeWorker(ctx context.Context, cfg *config.Config) (bootstrapstack.WorkerRunner, func(), error) {
+	rabbitMQQueue, err := provideQueueAdapter(cfg)
+	if err != nil {
+		return nil, nil, err
+	}
+	queueConsumer := provideQueueConsumer(rabbitMQQueue)
+	queueCloser := provideQueueCloser(rabbitMQQueue)
+	mailService := provideResendMailService(cfg)
+	queueHandler := provideRegisterEmailHandler(mailService)
+	workerRunner := provideWorkerRunner(queueConsumer, queueCloser, queueHandler)
+	return workerRunner, func() {
+	}, nil
 }

@@ -1,125 +1,196 @@
-package rabbitmq
+package rabbitmqqueue
 
 import (
 	"context"
-	"errors"
-	"log"
-	"time"
+	"fmt"
 
 	queueports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/queue"
-	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/rabbitmq/amqp091-go"
 )
 
-type RabbitMQ struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
+type RabbitMQQueue struct {
+	conn    *amqp091.Connection
+	channel *amqp091.Channel
 }
 
-func NewRabbitMQ(dsn string) (*RabbitMQ, error) {
-	conn, err := amqp.Dial(dsn)
+func NewRabbitMQQueue(dsn string) (*RabbitMQQueue, error) {
+	conn, err := amqp091.Dial(dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rabbitmq connect error: %w", err)
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
-		conn.Close()
-		return nil, err
+		_ = conn.Close()
+		return nil, fmt.Errorf("rabbitmq open channel error: %w", err)
 	}
 
-	return &RabbitMQ{
+	return &RabbitMQQueue{
 		conn:    conn,
 		channel: ch,
 	}, nil
 }
 
-func (r *RabbitMQ) Close() error {
-	if r.channel != nil {
-		_ = r.channel.Close()
-	}
-	if r.conn != nil {
-		return r.conn.Close()
-	}
-	return nil
-}
+var _ queueports.QueueProducer = (*RabbitMQQueue)(nil)
 
-func (r *RabbitMQ) Publish(ctx context.Context, topic string, payload []byte) error {
-	return r.channel.PublishWithContext(
-		ctx,
-		"amq.direct",
+func (r *RabbitMQQueue) Publish(
+	ctx context.Context,
+	topic string,
+	payload []byte,
+	opts *queueports.PublishOptions,
+) error {
+	if _, err := r.channel.QueueDeclare(
 		topic,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        payload,
-			Timestamp:   time.Now(),
-		},
-	)
-}
-
-func (r *RabbitMQ) Consume(ctx context.Context, queue string, handler queueports.QueueHandler) error {
-	_, err := r.channel.QueueDeclare(
-		queue,
 		true,
 		false,
 		false,
 		false,
 		nil,
+	); err != nil {
+		return fmt.Errorf("rabbitmq queue declare error: %w", err)
+	}
+
+	headers := amqp091.Table{}
+	if opts != nil && opts.Headers != nil {
+		for k, v := range opts.Headers {
+			headers[k] = v
+		}
+	}
+
+	return r.channel.PublishWithContext(
+		ctx,
+		"",
+		topic,
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        payload,
+			Headers:     headers,
+		},
 	)
-	if err != nil {
-		return err
+}
+
+var _ queueports.QueueConsumer = (*RabbitMQQueue)(nil)
+
+func (r *RabbitMQQueue) Consume(
+	ctx context.Context,
+	topic string,
+	handler queueports.QueueHandler,
+	opts *queueports.ConsumeOptions,
+) error {
+	if opts == nil {
+		opts = &queueports.ConsumeOptions{}
+	}
+
+	if _, err := r.channel.QueueDeclare(
+		topic,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	); err != nil {
+		return fmt.Errorf("rabbitmq queue declare error: %w", err)
+	}
+
+	// QoS / prefetch
+	if opts.Prefetch > 0 {
+		if err := r.channel.Qos(opts.Prefetch, 0, false); err != nil {
+			return fmt.Errorf("rabbitmq qos error: %w", err)
+		}
 	}
 
 	msgs, err := r.channel.Consume(
-		queue,
+		topic,
 		"",
-		false,
+		opts.AutoAck,
 		false,
 		false,
 		false,
 		nil,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("rabbitmq consume error: %w", err)
+	}
+	workerCount := opts.Concurrency
+	if workerCount <= 0 {
+		workerCount = 1
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			log.Printf("[RabbitMQ] Consumer stopped (%s)\n", queue)
-			return nil
+	errChan := make(chan error, 1)
 
-		case msg, ok := <-msgs:
-			if !ok {
-				log.Println("[RabbitMQ] Channel closed")
-				return errors.New("channel closed")
-			}
-
-			go func(m amqp.Delivery) {
-				defer func() {
-					if r := recover(); r != nil {
-						log.Printf("[RabbitMQ] panic recovered: %v", r)
-						_ = m.Nack(false, true)
-					}
-				}()
-
-				qmsg := queueports.QueueMessage{
-					ID:   m.MessageId,
-					Body: m.Body,
-					Headers: map[string]string{
-						"content_type": m.ContentType,
-					},
-				}
-
-				err := handler.HandleMessage(ctx, qmsg)
-				if err != nil {
-					_ = m.Nack(false, true)
+	for i := 0; i < workerCount; i++ {
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
 					return
-				}
+				case d, ok := <-msgs:
+					if !ok {
+						return
+					}
 
-				_ = m.Ack(false)
-			}(msg)
+					msg := queueports.QueueMessage{
+						ID:   d.MessageId,
+						Body: d.Body,
+						Headers: func() map[string]string {
+							h := map[string]string{}
+							for k, v := range d.Headers {
+								if s, ok := v.(string); ok {
+									h[k] = s
+								}
+							}
+							return h
+						}(),
+					}
+
+					handleErr := handler.HandleMessage(ctx, msg)
+
+					if opts.AutoAck {
+						continue
+					}
+
+					if handleErr != nil {
+						_ = d.Nack(false, true)
+
+						select {
+						case errChan <- handleErr:
+						default:
+						}
+						continue
+					}
+
+					_ = d.Ack(false)
+				}
+			}
+		}()
+	}
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-errChan:
+		return fmt.Errorf("handler error: %w", err)
+	}
+}
+
+var _ queueports.QueueCloser = (*RabbitMQQueue)(nil)
+
+func (r *RabbitMQQueue) Close() error {
+	var err error
+
+	if r.channel != nil {
+		if e := r.channel.Close(); e != nil {
+			err = e
 		}
 	}
+
+	if r.conn != nil {
+		if e := r.conn.Close(); e != nil && err == nil {
+			err = e
+		}
+	}
+
+	return err
 }
