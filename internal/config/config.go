@@ -15,6 +15,7 @@ type Config struct {
 	DB    DBConfig    `validate:"required"`
 	JWT   JWTConfig   `validate:"required"`
 	Redis RedisConfig `validate:"required"`
+	Mail  MailConfig  `validate:"required"`
 }
 
 type AppConfig struct {
@@ -40,6 +41,13 @@ type RedisConfig struct {
 	Password string `envconfig:"PASSWORD"`
 }
 
+type MailConfig struct {
+	Host string `envconfig:"HOST" validate:"required"`
+	Port int    `envconfig:"PORT" validate:"required,gt=0"`
+	User string `envconfig:"USER" validate:"required"`
+	Pass string `envconfig:"PASS" validate:"required"`
+}
+
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
@@ -56,6 +64,9 @@ func Load() (*Config, error) {
 	}
 	if err := envconfig.Process("REDIS", &cfg.Redis); err != nil {
 		return nil, fmt.Errorf("load REDIS config: %w", err)
+	}
+	if err := envconfig.Process("SMTP", &cfg.Mail); err != nil {
+		return nil, fmt.Errorf("load SMTP config: %w", err)
 	}
 
 	if err := _validate.Struct(&cfg); err != nil {

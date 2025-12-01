@@ -7,6 +7,7 @@ import (
 	bootstrapstack "github.com/lehoangvuvt/go-ent-boilerplate/internal/bootstrap/stack"
 	cacheports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/cache"
 	idempotencyports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/idempotency"
+	mailports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/mail"
 	repositoryports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/repository"
 	securityports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/security"
 	httpmiddleware "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/http/middleware"
@@ -28,6 +29,7 @@ type Services struct {
 	JWTService   securityports.JWTService
 	JWTDuration  time.Duration
 	CacheService cacheports.Cache
+	MailService  mailports.MailService
 }
 
 type Stores struct {

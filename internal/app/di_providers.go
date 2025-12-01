@@ -11,10 +11,12 @@ import (
 	rediscache "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/cache/redis"
 	entdb "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/ent"
 	jwtinfra "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/jwt"
+	smtpmail "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/mail/smtp"
 	transactionrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/transaction"
 	userrepository "github.com/lehoangvuvt/go-ent-boilerplate/internal/infrastructure/repository/user"
 	cacheports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/cache"
 	idempotencyports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/idempotency"
+	mailports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/mail"
 	repositoryports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/repository"
 	securityports "github.com/lehoangvuvt/go-ent-boilerplate/internal/interface/core/ports/security"
 	"github.com/redis/go-redis/v9"
@@ -79,4 +81,13 @@ func provideHandlerArgs(
 		Services:     services,
 		Stores:       stores,
 	}
+}
+
+func provideMailService(cfg *config.Config) mailports.MailService {
+	return smtpmail.NewSMTPMailService(
+		cfg.Mail.Host,
+		cfg.Mail.Port,
+		cfg.Mail.User,
+		cfg.Mail.Pass,
+	)
 }

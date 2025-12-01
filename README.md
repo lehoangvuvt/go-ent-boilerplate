@@ -124,6 +124,11 @@ REDIS_PASSWORD=
 
 JWT_SECRET=supersecret
 JWT_DURATION=3600
+
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASS=
 ```
 
 ---
@@ -137,7 +142,7 @@ go run ./cmd
 API starts at:
 
 ```
-http://localhost:8080
+http://localhost:{{ your-configured-port }}
 ```
 
 ---

@@ -33,10 +33,12 @@ func InitializeContainer(ctx context.Context, cfg *config.Config) (*Container, e
 	if err != nil {
 		return nil, err
 	}
+	mailService := provideMailService(cfg)
 	services := bootstrap.Services{
 		JWTService:   jwtService,
 		JWTDuration:  duration,
 		CacheService: cache,
+		MailService:  mailService,
 	}
 	idempotencyStore := provideIdempotencyStore(cfg)
 	stores := bootstrap.Stores{

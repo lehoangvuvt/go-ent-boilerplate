@@ -23,6 +23,8 @@ var ServiceSet = wire.NewSet(
 	provideRedisOptions,
 	provideCache,
 
+	provideMailService,
+
 	wire.Struct(new(bootstrap.Services), "*"),
 )
 
